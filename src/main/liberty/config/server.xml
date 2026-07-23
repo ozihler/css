@@ -1,0 +1,41 @@
+<server description="Fitness memberships">
+    <featureManager>
+        <feature>cdi-4.1</feature>
+        <feature>jdbc-4.2</feature>
+        <feature>jsonb-3.0</feature>
+        <feature>jsonp-2.1</feature>
+        <feature>mpConfig-3.1</feature>
+        <feature>mpHealth-4.0</feature>
+        <feature>mpOpenAPI-4.1</feature>
+        <feature>persistence-3.2</feature>
+        <feature>restfulWS-4.0</feature>
+        <feature>validation-3.1</feature>
+    </featureManager>
+
+    <variable name="http.port" defaultValue="9080"/>
+    <variable name="https.port" defaultValue="9443"/>
+    <variable name="database.host" defaultValue="localhost"/>
+    <variable name="database.port" defaultValue="5432"/>
+    <variable name="database.name" defaultValue="fitness"/>
+    <variable name="database.user" defaultValue="fitness"/>
+    <variable name="database.password" defaultValue="fitness"/>
+
+    <httpEndpoint id="defaultHttpEndpoint"
+                  httpPort="${http.port}"
+                  httpsPort="${https.port}"/>
+
+    <library id="postgresql-driver">
+        <fileset dir="${server.config.dir}/lib" includes="postgresql-*.jar"/>
+    </library>
+
+    <dataSource id="fitnessDataSource" jndiName="jdbc/fitness">
+        <jdbcDriver libraryRef="postgresql-driver"/>
+        <properties.postgresql serverName="${database.host}"
+                               portNumber="${database.port}"
+                               databaseName="${database.name}"
+                               user="${database.user}"
+                               password="${database.password}"/>
+    </dataSource>
+
+    <webApplication contextRoot="/" location="fitness-memberships.war"/>
+</server>

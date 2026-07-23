@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: fitness
+      POSTGRES_USER: fitness
+      POSTGRES_PASSWORD: fitness
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fitness -d fitness"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+    volumes:
+      - fitness-postgres-18-data:/var/lib/postgresql
+
+  app:
+    build: .
+    environment:
+      database.host: postgres
+      database.port: 5432
+      database.name: fitness
+      database.user: fitness
+      database.password: fitness
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: fitness
+      DATABASE_USER: fitness
+      DATABASE_PASSWORD: fitness
+    ports:
+      - "9080:9080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9080/health/ready >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  fitness-postgres-18-data:
