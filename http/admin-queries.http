@@ -1,0 +1,29 @@
+@baseUrl = http://localhost:9080
+
+### Health readiness, includes PostgreSQL readiness
+GET {{baseUrl}}/health/ready
+
+### Health liveness
+GET {{baseUrl}}/health/live
+
+### OpenAPI document
+GET {{baseUrl}}/openapi
+Accept: application/yaml
+
+### Query all memberships, default page size
+GET {{baseUrl}}/api/admin/memberships?page=0
+
+### Query all memberships with explicit page size
+GET {{baseUrl}}/api/admin/memberships?page=0&size=20
+
+### Query active memberships
+GET {{baseUrl}}/api/admin/memberships?page=0&size=20&status=ACTIVE
+
+### Query paused memberships
+GET {{baseUrl}}/api/admin/memberships?page=0&size=20&status=PAUSED
+
+### Query second page
+GET {{baseUrl}}/api/admin/memberships?page=1&size=20
+
+### Invalid status filter
+GET {{baseUrl}}/api/admin/memberships?page=0&size=20&status=CANCELLED

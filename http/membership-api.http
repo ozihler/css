@@ -1,0 +1,67 @@
+@baseUrl = http://localhost:9080
+@email = jane.{{$timestamp}}@example.com
+@membershipId = replace-with-membership-id
+
+### Sign up a STANDARD membership
+POST {{baseUrl}}/api/memberships
+Content-Type: application/json
+
+{
+  "memberName": "Jane Doe",
+  "email": "{{email}}",
+  "planCode": "STANDARD"
+}
+
+> {%
+    client.global.set("membershipId", response.body.id);
+%}
+
+### Sign up a PREMIUM membership
+POST {{baseUrl}}/api/memberships
+Content-Type: application/json
+
+{
+  "memberName": "Priya Shah",
+  "email": "priya.{{$timestamp}}@example.com",
+  "planCode": "PREMIUM"
+}
+
+### View one membership
+GET {{baseUrl}}/api/memberships/{{membershipId}}
+
+### Pause a membership for 30 days
+POST {{baseUrl}}/api/memberships/{{membershipId}}/pause
+Content-Type: application/json
+
+{
+  "durationInDays": 30
+}
+
+### Pause a membership for 60 days
+POST {{baseUrl}}/api/memberships/{{membershipId}}/pause
+Content-Type: application/json
+
+{
+  "durationInDays": 60
+}
+
+### Duplicate email conflict
+POST {{baseUrl}}/api/memberships
+Content-Type: application/json
+
+{
+  "memberName": "Jane Duplicate",
+  "email": "{{email}}",
+  "planCode": "STANDARD"
+}
+
+### Unknown membership
+GET {{baseUrl}}/api/memberships/00000000-0000-0000-0000-000000000000
+
+### Invalid pause duration
+POST {{baseUrl}}/api/memberships/{{membershipId}}/pause
+Content-Type: application/json
+
+{
+  "durationInDays": 29
+}
