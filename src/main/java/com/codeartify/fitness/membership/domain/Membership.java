@@ -52,6 +52,18 @@ public final class Membership {
         pausePeriod = PausePeriod.startingOn(today, durationInDays);
     }
 
+    public void resume(LocalDate today) {
+        if (statusOn(today) == MembershipStatus.ACTIVE) {
+            throw new ActiveMembershipCannotBeResumedException("Membership is already active. Cannot be resumed");
+        }
+
+        if (statusOn(today) == MembershipStatus.PAUSED) {
+            pausePeriod = null;
+        }
+
+
+    }
+
     public MembershipStatus statusOn(LocalDate date) {
         if (pausePeriod != null && pausePeriod.includes(date)) {
             return MembershipStatus.PAUSED;

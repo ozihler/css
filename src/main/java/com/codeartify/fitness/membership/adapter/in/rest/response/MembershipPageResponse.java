@@ -11,14 +11,14 @@ public record MembershipPageResponse(
         int page,
         int size,
         long totalElements,
-        List<MembershipResponse> memberships) {
+        List<PauseMembershipResponse> memberships) {
     public static MembershipPageResponse from(MembershipPage page, LocalDate businessDate) {
         return new MembershipPageResponse(
                 page.page(),
                 page.size(),
                 page.totalElements(),
                 page.memberships().stream()
-                        .map(membership -> MembershipResponse.from(membership, businessDate))
+                        .map(membership -> PauseMembershipResponse.from(membership, businessDate))
                         .toList());
     }
 }

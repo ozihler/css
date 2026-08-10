@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:9080
 @email = jane.{{$timestamp}}@example.com
-@membershipId = replace-with-membership-id
+@membershipId =506241e8-b395-4a7e-8af7-ca8fbaa5f1d2
 
 ### Sign up a STANDARD membership
 POST {{baseUrl}}/api/memberships
@@ -36,6 +36,10 @@ Content-Type: application/json
 {
   "durationInDays": 30
 }
+
+### Resume a membership
+POST {{baseUrl}}/api/memberships/{{membershipId}}/resume
+Content-Type:application/json
 
 ### Pause a membership for 60 days
 POST {{baseUrl}}/api/memberships/{{membershipId}}/pause

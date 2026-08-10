@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Schema(name = "Membership")
 @JsonbNillable
-public record MembershipResponse(
+public record PauseMembershipResponse(
         String id,
         String memberName,
         String email,
@@ -18,10 +18,10 @@ public record MembershipResponse(
         LocalDate activatedOn,
         LocalDate pausedFrom,
         LocalDate resumeOn) {
-    public static MembershipResponse from(Membership membership, LocalDate businessDate) {
+    public static PauseMembershipResponse from(Membership membership, LocalDate businessDate) {
         LocalDate pausedFrom = membership.pausePeriod() == null ? null : membership.pausePeriod().pausedFrom();
         LocalDate resumeOn = membership.pausePeriod() == null ? null : membership.pausePeriod().resumeOn();
-        return new MembershipResponse(
+        return new PauseMembershipResponse(
                 membership.id().value(),
                 membership.memberName(),
                 membership.emailAddress().value(),
