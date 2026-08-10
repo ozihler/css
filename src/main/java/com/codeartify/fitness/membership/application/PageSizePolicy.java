@@ -4,6 +4,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.util.Objects;
+
 @ApplicationScoped
 public class PageSizePolicy {
     private final int defaultPageSize;
@@ -22,10 +24,12 @@ public class PageSizePolicy {
     }
 
     public int resolve(Integer requestedSize) {
-        int resolvedSize = requestedSize == null ? defaultPageSize : requestedSize;
+        int resolvedSize = Objects.requireNonNullElse(requestedSize, defaultPageSize);
+
         if (resolvedSize < 1) {
             throw new IllegalArgumentException("Page size must be greater than zero.");
         }
+
         return Math.min(resolvedSize, maximumPageSize);
     }
 }

@@ -40,7 +40,15 @@ public class MembershipQueryService implements GetMembership, FindMemberships {
         if (search.page() < 0) {
             throw new IllegalArgumentException("Page number must not be negative.");
         }
-        int pageSize = pageSizePolicy.resolve(search.size());
-        return membershipRepository.findMemberships(search.page(), pageSize, search.status(), LocalDate.now(clock));
+
+        return membershipRepository.findMemberships(
+                search.page(),
+                pageSizeFor(search),
+                search.status(),
+                LocalDate.now(clock));
+    }
+
+    private int pageSizeFor(MembershipSearch search) {
+        return pageSizePolicy.resolve(search.size());
     }
 }
