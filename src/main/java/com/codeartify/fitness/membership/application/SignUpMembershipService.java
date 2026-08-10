@@ -30,7 +30,7 @@ public class SignUpMembershipService implements SignUpMembership {
     public Membership signUp(SignUpMembershipCommand command) {
         EmailAddress emailAddress = new EmailAddress(command.email());
         membershipRepository.findByEmailAddress(emailAddress)
-                .ifPresent(existing -> {
+                .ifPresent(_ -> {
                     throw new DuplicateEmailAddressException(emailAddress.value());
                 });
 

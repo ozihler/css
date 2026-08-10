@@ -104,7 +104,36 @@ class JpaMembershipRepositoryTest {
     }
 
     @Test
-    void supports_pagination_status_filtering_and_deterministic_sorting() {
+    void returns_the_requested_page_in_deterministic_order() {
+        Membership first = membership(
+                "00000000-0000-0000-0000-000000000001",
+                "First", "first@example.com", "STANDARD", LocalDate.of(2026, 7, 25));
+        Membership second = membership(
+                "00000000-0000-0000-0000-000000000002",
+                "Second", "second@example.com", "PREMIUM", LocalDate.of(2026, 7, 25));
+        Membership older = membership(
+                "00000000-0000-0000-0000-000000000003",
+                "Older", "older@example.com", "STANDARD", LocalDate.of(2026, 7, 20));
+
+        inTransaction(() -> {
+            repository.save(older);
+            repository.save(second);
+            repository.save(first);
+        });
+
+        var firstPage = repository.findMemberships(0, 2, null, LocalDate.of(2026, 8, 2));
+        var secondPage = repository.findMemberships(1, 2, null, LocalDate.of(2026, 8, 2));
+
+        assertThat(firstPage.totalElements()).isEqualTo(3);
+        assertThat(firstPage.memberships()).extracting(membership -> membership.emailAddress().value())
+                .containsExactly("first@example.com", "second@example.com");
+        assertThat(secondPage.totalElements()).isEqualTo(3);
+        assertThat(secondPage.memberships()).extracting(membership -> membership.emailAddress().value())
+                .containsExactly("older@example.com");
+    }
+
+    @Test
+    void filters_memberships_by_effective_status() {
         Membership active = membership("Active", "active@example.com", "STANDARD", LocalDate.of(2026, 7, 25));
         Membership paused = membership("Paused", "paused@example.com", "PREMIUM", LocalDate.of(2026, 7, 25));
         Membership older = membership("Older", "older@example.com", "STANDARD", LocalDate.of(2026, 7, 20));
@@ -116,14 +145,9 @@ class JpaMembershipRepositoryTest {
             repository.save(active);
         });
 
-        var all = repository.findMemberships(0, 2, null, LocalDate.of(2026, 8, 2));
         var pausedPage = repository.findMemberships(0, 20, MembershipStatus.PAUSED, LocalDate.of(2026, 8, 2));
         var activePage = repository.findMemberships(0, 20, MembershipStatus.ACTIVE, LocalDate.of(2026, 8, 2));
 
-        assertThat(all.totalElements()).isEqualTo(3);
-        assertThat(all.memberships()).hasSize(2);
-        assertThat(all.memberships()).extracting(membership -> membership.activatedOn())
-                .containsExactly(LocalDate.of(2026, 7, 25), LocalDate.of(2026, 7, 25));
         assertThat(pausedPage.memberships()).extracting(membership -> membership.emailAddress().value())
                 .containsExactly("paused@example.com");
         assertThat(activePage.memberships()).extracting(membership -> membership.emailAddress().value())
@@ -183,8 +207,17 @@ class JpaMembershipRepositoryTest {
     }
 
     private static Membership membership(String memberName, String email, String planCode, LocalDate activatedOn) {
+        return membership(MembershipId.newId().value(), memberName, email, planCode, activatedOn);
+    }
+
+    private static Membership membership(
+            String membershipId,
+            String memberName,
+            String email,
+            String planCode,
+            LocalDate activatedOn) {
         return Membership.signUp(
-                MembershipId.newId(),
+                new MembershipId(membershipId),
                 memberName,
                 new EmailAddress(email),
                 new PlanCode(planCode),
