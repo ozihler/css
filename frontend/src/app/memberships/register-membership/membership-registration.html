@@ -1,0 +1,75 @@
+<section class="panel" aria-labelledby="registration-title">
+  <div class="panel-heading">
+    <span class="step-number" aria-hidden="true">01</span>
+    <div>
+      <p class="eyebrow">Create</p>
+      <h2 id="registration-title">Register a member</h2>
+      <p>Add the essentials now. Memberships begin immediately.</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="register()" novalidate>
+    <div class="field">
+      <label for="member-name">Full name</label>
+      <input
+        id="member-name"
+        type="text"
+        formControlName="memberName"
+        autocomplete="name"
+        placeholder="e.g. Maya Chen"
+      />
+      @if (form.controls.memberName.touched && form.controls.memberName.invalid) {
+        <small class="validation">Enter the member's name.</small>
+      }
+    </div>
+
+    <div class="field">
+      <label for="member-email">Email address</label>
+      <input
+        id="member-email"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        placeholder="maya@example.com"
+      />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <small class="validation">Enter a valid email address.</small>
+      }
+    </div>
+
+    <fieldset>
+      <legend>Membership plan</legend>
+      <label class="plan-option">
+        <input type="radio" formControlName="planCode" value="STANDARD" />
+        <span>
+          <strong>Standard</strong>
+          <small>Core access</small>
+        </span>
+      </label>
+      <label class="plan-option">
+        <input type="radio" formControlName="planCode" value="PREMIUM" />
+        <span>
+          <strong>Premium</strong>
+          <small>Full benefits</small>
+        </span>
+      </label>
+    </fieldset>
+
+    <button class="submit" type="submit" [disabled]="submitting()">
+      @if (submitting()) {
+        Registering…
+      } @else {
+        Register membership <span aria-hidden="true">→</span>
+      }
+    </button>
+  </form>
+
+  <div class="message-region" aria-live="polite">
+    @if (successMessage()) {
+      <p class="notice success">{{ successMessage() }}</p>
+    }
+    @if (errorMessage()) {
+      <p class="notice error">{{ errorMessage() }}</p>
+    }
+  </div>
+</section>

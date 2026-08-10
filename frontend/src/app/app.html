@@ -1,0 +1,41 @@
+<header class="topbar">
+  <a class="brand" href="#main-content" aria-label="Pulse Admin home">
+    <span class="brand-mark" aria-hidden="true">P</span>
+    <span>
+      <strong>Pulse</strong>
+      <small>Membership admin</small>
+    </span>
+  </a>
+
+  <a class="primary-action" href="#registration">
+    <span aria-hidden="true">+</span>
+    New membership
+  </a>
+</header>
+
+<main id="main-content">
+  <section class="hero" aria-labelledby="page-title">
+    <div>
+      <p class="eyebrow">Operations dashboard</p>
+      <h1 id="page-title">Memberships, at a glance.</h1>
+      <p class="hero-copy">
+        Register members, find the right account, and manage pauses without leaving the dashboard.
+      </p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <span class="orb orb-large"></span>
+      <span class="orb orb-small"></span>
+      <span class="pulse-line"></span>
+    </div>
+  </section>
+
+  <div class="dashboard-grid">
+    <app-membership-registration id="registration" (membershipRegistered)="refreshMemberships()" />
+    <app-membership-list [refreshToken]="refreshToken()" />
+  </div>
+</main>
+
+<footer>
+  <span>Pulse Membership Operations</span>
+  <span class="connection"><i></i> API route: /api</span>
+</footer>

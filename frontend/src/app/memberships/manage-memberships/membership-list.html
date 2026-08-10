@@ -1,0 +1,152 @@
+<section class="panel" aria-labelledby="memberships-title">
+  <div class="panel-heading">
+    <div class="heading-copy">
+      <span class="step-number" aria-hidden="true">02</span>
+      <div>
+        <p class="eyebrow">Manage</p>
+        <h2 id="memberships-title">Membership directory</h2>
+      </div>
+    </div>
+
+    <label class="filter">
+      <span>Status</span>
+      <select [value]="statusFilter()" (change)="changeStatus($event)">
+        <option value="">All memberships</option>
+        <option value="ACTIVE">Active</option>
+        <option value="PAUSED">Paused</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="summary" aria-live="polite">
+    <strong>{{ totalElements() }}</strong>
+    <span>{{ totalElements() === 1 ? 'membership' : 'memberships' }} found</span>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-banner" role="alert">
+      <span>{{ errorMessage() }}</span>
+      <button type="button" (click)="retry()">Try again</button>
+    </div>
+  }
+
+  <div class="table-wrap" [attr.aria-busy]="loading()">
+    @if (loading()) {
+      <div class="loading-state" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        Loading memberships…
+      </div>
+    } @else if (memberships().length === 0 && !errorMessage()) {
+      <div class="empty-state">
+        <span aria-hidden="true">◎</span>
+        <h3>No memberships found</h3>
+        <p>Try another status or register the first member.</p>
+      </div>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Member</th>
+            <th scope="col">Plan</th>
+            <th scope="col">Status</th>
+            <th scope="col">Started</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (membership of memberships(); track membership.id) {
+            <tr>
+              <td data-label="Member">
+                <span class="avatar" aria-hidden="true">{{ membership.memberName.charAt(0) }}</span>
+                <span class="member-details">
+                  <strong>{{ membership.memberName }}</strong>
+                  <small>{{ membership.email }}</small>
+                </span>
+              </td>
+              <td data-label="Plan">
+                <span class="plan">{{
+                  membership.planCode === 'PREMIUM' ? 'Premium' : 'Standard'
+                }}</span>
+              </td>
+              <td data-label="Status">
+                <span class="status" [class.paused]="membership.status === 'PAUSED'">
+                  <i aria-hidden="true"></i
+                  >{{ membership.status === 'ACTIVE' ? 'Active' : 'Paused' }}
+                </span>
+                @if (membership.resumeOn) {
+                  <small class="resume-date"
+                    >until {{ membership.resumeOn | date: 'mediumDate' }}</small
+                  >
+                }
+              </td>
+              <td data-label="Started">{{ membership.activatedOn | date: 'mediumDate' }}</td>
+              <td class="actions">
+                @if (membership.status === 'ACTIVE') {
+                  <button
+                    class="secondary"
+                    type="button"
+                    [disabled]="actionMembershipId() === membership.id"
+                    (click)="beginPause(membership.id)"
+                    [attr.aria-label]="'Pause ' + membership.memberName"
+                  >
+                    Pause
+                  </button>
+                } @else {
+                  <button
+                    class="secondary resume"
+                    type="button"
+                    [disabled]="actionMembershipId() === membership.id"
+                    (click)="resume(membership)"
+                    [attr.aria-label]="'Resume ' + membership.memberName"
+                  >
+                    {{ actionMembershipId() === membership.id ? 'Resuming…' : 'Resume' }}
+                  </button>
+                }
+              </td>
+            </tr>
+            @if (pauseMembershipId() === membership.id) {
+              <tr class="pause-row">
+                <td colspan="5">
+                  <div class="pause-form">
+                    <label [for]="'pause-duration-' + membership.id"
+                      >Pause {{ membership.memberName }} for</label
+                    >
+                    <select
+                      [id]="'pause-duration-' + membership.id"
+                      [value]="pauseDurationInDays()"
+                      (change)="changePauseDuration($event)"
+                    >
+                      <option value="30">30 days</option>
+                      <option value="45">45 days</option>
+                      <option value="60">60 days</option>
+                    </select>
+                    <button
+                      class="confirm"
+                      type="button"
+                      [disabled]="actionMembershipId() === membership.id"
+                      (click)="confirmPause(membership)"
+                    >
+                      {{ actionMembershipId() === membership.id ? 'Pausing…' : 'Confirm pause' }}
+                    </button>
+                    <button class="cancel" type="button" (click)="cancelPause()">Cancel</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <nav class="pagination" aria-label="Membership pages">
+    <span>Showing {{ resultStart() }}–{{ resultEnd() }} of {{ totalElements() }}</span>
+    <div>
+      <button type="button" (click)="previousPage()" [disabled]="page() === 0">Previous</button>
+      <span>Page {{ page() + 1 }} of {{ totalPages() }}</span>
+      <button type="button" (click)="nextPage()" [disabled]="page() + 1 >= totalPages()">
+        Next
+      </button>
+    </div>
+  </nav>
+</section>

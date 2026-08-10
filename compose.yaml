@@ -16,7 +16,7 @@ services:
       - fitness-postgres-18-data:/var/lib/postgresql
 
   app:
-    build: .
+    build: ./backend
     environment:
       database.host: postgres
       database.port: 5432
@@ -38,6 +38,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      app:
+        condition: service_healthy
 
 volumes:
   fitness-postgres-18-data:
