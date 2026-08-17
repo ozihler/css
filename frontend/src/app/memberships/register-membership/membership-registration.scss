@@ -83,7 +83,7 @@ legend {
   color: #a0a8ad;
 }
 
-.field input.ng-touched.ng-invalid {
+.field input[aria-invalid='true'] {
   border-color: var(--danger);
 }
 

@@ -8,18 +8,21 @@
     </div>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="register()" novalidate>
+  <form [formRoot]="registrationForm">
     <div class="field">
       <label for="member-name">Full name</label>
       <input
         id="member-name"
         type="text"
-        formControlName="memberName"
+        [formField]="registrationForm.memberName"
+        [attr.aria-invalid]="
+          registrationForm.memberName().touched() && registrationForm.memberName().invalid()
+        "
         autocomplete="name"
         placeholder="e.g. Maya Chen"
       />
-      @if (form.controls.memberName.touched && form.controls.memberName.invalid) {
-        <small class="validation">Enter the member's name.</small>
+      @if (registrationForm.memberName().touched() && registrationForm.memberName().invalid()) {
+        <small class="validation">{{ registrationForm.memberName().errors()[0]?.message }}</small>
       }
     </div>
 
@@ -28,26 +31,29 @@
       <input
         id="member-email"
         type="email"
-        formControlName="email"
+        [formField]="registrationForm.email"
+        [attr.aria-invalid]="
+          registrationForm.email().touched() && registrationForm.email().invalid()
+        "
         autocomplete="email"
         placeholder="maya@example.com"
       />
-      @if (form.controls.email.touched && form.controls.email.invalid) {
-        <small class="validation">Enter a valid email address.</small>
+      @if (registrationForm.email().touched() && registrationForm.email().invalid()) {
+        <small class="validation">{{ registrationForm.email().errors()[0]?.message }}</small>
       }
     </div>
 
     <fieldset>
       <legend>Membership plan</legend>
       <label class="plan-option">
-        <input type="radio" formControlName="planCode" value="STANDARD" />
+        <input type="radio" [formField]="registrationForm.planCode" value="STANDARD" />
         <span>
           <strong>Standard</strong>
           <small>Core access</small>
         </span>
       </label>
       <label class="plan-option">
-        <input type="radio" formControlName="planCode" value="PREMIUM" />
+        <input type="radio" [formField]="registrationForm.planCode" value="PREMIUM" />
         <span>
           <strong>Premium</strong>
           <small>Full benefits</small>
@@ -55,8 +61,8 @@
       </label>
     </fieldset>
 
-    <button class="submit" type="submit" [disabled]="submitting()">
-      @if (submitting()) {
+    <button class="submit" type="submit" [disabled]="registrationForm().submitting()">
+      @if (registrationForm().submitting()) {
         Registering…
       } @else {
         Register membership <span aria-hidden="true">→</span>
@@ -68,8 +74,8 @@
     @if (successMessage()) {
       <p class="notice success">{{ successMessage() }}</p>
     }
-    @if (errorMessage()) {
-      <p class="notice error">{{ errorMessage() }}</p>
+    @if (registrationForm().getError('server'); as error) {
+      <p class="notice error">{{ error.message }}</p>
     }
   </div>
 </section>

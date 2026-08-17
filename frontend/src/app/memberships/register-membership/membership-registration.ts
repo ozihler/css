@@ -1,55 +1,71 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, output, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize } from 'rxjs';
+import {Component, inject, numberAttribute, output, signal} from '@angular/core';
+import { email, FormField, form, FormRoot, maxLength, required } from '@angular/forms/signals';
+import type { FieldTree, TreeValidationResult } from '@angular/forms/signals';
+import { firstValueFrom } from 'rxjs';
 
 import { apiErrorMessage } from '../shared/api-error';
-import { Membership, PlanCode } from '../shared/membership';
+import { Membership, RegisterMembership } from '../shared/membership';
 import { MembershipsApi } from '../shared/memberships-api';
 
+const EMPTY_REGISTRATION: RegisterMembership = {
+  memberName: '',
+  email: '',
+  planCode: 'STANDARD',
+};
+
 @Component({
+  standalone: true,
   selector: 'app-membership-registration',
-  imports: [ReactiveFormsModule],
+  imports: [FormField, FormRoot],
   templateUrl: './membership-registration.html',
   styleUrl: './membership-registration.scss',
 })
 export class MembershipRegistrationComponent {
   private readonly api = inject(MembershipsApi);
-  private readonly formBuilder = inject(FormBuilder);
+  private readonly registrationModel = signal<RegisterMembership>(EMPTY_REGISTRATION);
 
   readonly membershipRegistered = output<Membership>();
 
-  protected readonly submitting = signal(false);
   protected readonly successMessage = signal<string | null>(null);
-  protected readonly errorMessage = signal<string | null>(null);
-  protected readonly form = this.formBuilder.nonNullable.group({
-    memberName: ['', [Validators.required, Validators.maxLength(200)]],
-    email: ['', [Validators.required, Validators.email, Validators.maxLength(320)]],
-    planCode: this.formBuilder.nonNullable.control<PlanCode>('STANDARD'),
-  });
-
-  protected register(): void {
-    this.successMessage.set(null);
-    this.errorMessage.set(null);
-
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    this.submitting.set(true);
-    this.api
-      .register(this.form.getRawValue())
-      .pipe(finalize(() => this.submitting.set(false)))
-      .subscribe({
-        next: (membership) => {
-          this.successMessage.set(`${membership.memberName} is now registered.`);
-          this.form.reset({ memberName: '', email: '', planCode: 'STANDARD' });
-          this.membershipRegistered.emit(membership);
-        },
-        error: (error: HttpErrorResponse) => {
-          this.errorMessage.set(apiErrorMessage(error, 'The membership could not be registered.'));
-        },
+  protected readonly registrationForm = form(
+    this.registrationModel,
+    (membership) =>
+    {
+      required(membership.memberName, { message: "Enter the member's name." });
+      maxLength(membership.memberName, 200, {
+        message: 'The member name cannot exceed 200 characters.',
       });
+
+      required(membership.email, { message: 'Enter a valid email address.' });
+      email(membership.email, { message: 'Enter a valid email address.' });
+      maxLength(membership.email, 320, {
+        message: 'The email address cannot exceed 320 characters.',
+      });
+    },
+    {
+      name: 'membership-registration',
+      submission: {
+        action: (registration) => this.registerMembership(registration),
+      },
+    },
+  );
+
+  private async registerMembership(
+    registration: FieldTree<RegisterMembership>,
+  ): Promise<TreeValidationResult> {
+    this.successMessage.set(null);
+
+    try {
+      const membership = await firstValueFrom(this.api.register(registration().value()));
+      this.successMessage.set(`${membership.memberName} is now registered.`);
+      registration().reset(EMPTY_REGISTRATION);
+      this.membershipRegistered.emit(membership);
+      return undefined;
+    } catch (error: unknown) {
+      return {
+        kind: 'server',
+        message: apiErrorMessage(error, 'The membership could not be registered.'),
+      };
+    }
   }
 }
